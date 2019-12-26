@@ -1,0 +1,106 @@
+
+<head>
+<meta charset="UTF-8" />
+<!-- Put the CSS code here -->
+</head>
+<body>
+ 
+<!-- Put the HTML template code here -->
+<div id="app">
+  <titulo></titulo>
+</div>
+
+
+<script src="https://unpkg.com/vue"></script>
+<script src="https://unpkg.com/vuex"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.js"></script>
+ 
+<script>
+// Put the Vue code here
+Vue.component('titulo',{
+  template:
+  `
+  <div>
+    <h1> numero {{ numero }} </h1>
+    <hijo> </hijo>
+  </div>
+  `,
+  computed: {
+    ...Vuex.mapState(['numero'])
+  }
+})
+
+Vue.component('hijo',{
+  template:
+  `
+  <div>
+    <button @click="aumentar" > + </button>
+    <button @click="disminuir(3)" > - </button>
+    <button @click="obtenerCursos" > Obtener Cursos </button>
+    <h1> numero: {{ numero }} </h1>
+
+    <ul v-for="item of cursos" >
+      <li><h3> id: {{ item.id }}, Nombre: {{ item.nombre }} </h3></li>
+    </ul>
+  </div>
+  `,
+  computed: {
+    ...Vuex.mapState(['numero', 'cursos'])
+  },
+  methods : {
+    ...Vuex.mapMutations(['aumentar','disminuir']),
+    ...Vuex.mapActions(['obtenerCursos'])
+  }
+
+});
+
+const store = new Vuex.Store({
+  state : {
+    numero : 10,
+    cursos : [],
+  },
+  mutations : {
+    aumentar(){
+      this.state.numero ++;
+    },
+    disminuir(state,n){
+      state.numero -= n;
+    },
+    llenarCursos(state,cursosActions){
+      state.cursos = cursosActions
+    }
+  },
+  actions: {
+    obtenerCursos: async function({commit}){
+    //  const data = await fetch('cursos.json');
+      var url = await '/controlv2/getroutes';
+      var urlPost = await 'https://dashboard.mojonetworks.com/rest/api/v2/session';
+      var headers = { 'type': 'apikeycredentials',
+      'keyId' : 'KEY-ATN566072-752',
+      'keyValue' : '236f962cb00645f324aca3eefc46b372'
+
+       }
+      const data = axios.get(url,headers)
+              .then(function (response) {
+                return response.data;
+              })
+              .catch(function (error) {
+                console.log(error);
+              });
+      const cursos = await data;
+      commit('llenarCursos', cursos);
+    } 
+  }
+
+});
+
+new Vue({
+  el: '#app',
+  store
+
+  });
+
+</script>
+</body>
+
+
